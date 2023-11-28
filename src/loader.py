@@ -62,6 +62,16 @@ class SlackDataLoader:
         write a function to get all the messages from a channel
         
         '''
+        channel_path = os.path.join(self.path, channel_name)
+        channel_messages = []
+        for file_name in os.listdir(channel_path):
+            file_path = os.path.join(channel_path, file_name)
+            if os.path.isfile(file_path) and file_name.endswith('.json'):
+                with open(file_path, 'r') as f:
+                    messages = json.load(f)
+                    channel_messages.extend(messages)
+        
+        return channel_messages
 
     # 
     def get_user_map(self):

@@ -78,12 +78,12 @@ class SlackDataLoader:
         '''
         write a function to get a map between user id and user name
         '''
-        userNamesById = {}
-        userIdsByName = {}
+        user_names_by_id = {}
+        user_ids_by_name = {}
         for user in self.users:
-            userNamesById[user['id']] = user['name']
-            userIdsByName[user['name']] = user['id']
-        return userNamesById, userIdsByName        
+            user_names_by_id[user['id']] = user['name']
+            user_ids_by_name[user['name']] = user['id']
+        return user_names_by_id, user_ids_by_name       
 
 
 

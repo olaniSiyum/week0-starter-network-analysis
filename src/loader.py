@@ -35,6 +35,8 @@ class SlackDataLoader:
         self.path = path
         self.channels = self.get_channels()
         self.users = self.get_ussers()
+        self.user_names_by_id, self.user_ids_by_name = self.get_user_map()
+
     
 
     def get_users(self):

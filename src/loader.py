@@ -6,6 +6,7 @@ import glob
 
 
 
+
 # Create wrapper classes for using slack_sdk in place of slacker
 class SlackDataLoader:
     '''
@@ -31,8 +32,6 @@ class SlackDataLoader:
         self.path = path
         self.channels = self.get_channels()
         self.users = self.get_users()
-        
-
     
 
     def get_users(self):
@@ -46,7 +45,7 @@ class SlackDataLoader:
     
     def get_channels(self):
         '''
-        write a function to get all the channels from the json file
+        Method to read and return the channels from channels.json file 
         '''
         with open(os.path.join(self.path, 'channels.json'), 'r') as f:
             channels = json.load(f)
@@ -60,6 +59,7 @@ class SlackDataLoader:
         '''
         messages = []
         channel_id = None 
+
         # finding the channel id based on the channel name 
         for channel in self.channels:
             if channel['name'] == channel_name:
@@ -69,9 +69,9 @@ class SlackDataLoader:
             print(f"channel '{channel_name}' not found")
             return messages 
         # reading all the json files in channel folder 
-        channel_folder_path = os.path.join(self.path, channel_id)
+        channel_folder_path = os.path.join(self.path, channel_name)
         for filename in os.listdir(channel_folder_path):
-            if filename.endwith('.json'):
+            if filename.endswith('.json'):
                 file_path = os.path.join(channel_folder_path, filename)
                 with open(file_path, 'r') as f:
                     channel_messages = json.load(f)
@@ -89,7 +89,10 @@ class SlackDataLoader:
         for user in self.users:
             userNamesById[user['id']] = user['name']
             userIdsByName[user['name']] = user['id']
-        return userNamesById, userIdsByName
+        return userNamesById, userIdsByName        
+
+
+        
     def slack_parser(self, path_channel):
         #for reading and extracting useful information for json files containing slack data 
         """ parse slack data to extract useful informations from the json file
@@ -101,8 +104,15 @@ class SlackDataLoader:
             5. convert to dataframe and merge all
             6. reset the index and return dataframe
         """
+
         # specify path to get json files
         combined = []
+        
+        
+        # # loop through all folders and extract json files
+        # for item_name in os.listdir(path_channel):
+        #     item_path = os.path.join(path_channel, item_name)
+        #     if os.path.isdir(item_path):
         for json_file in glob.glob(f"{path_channel}/*.json"):
             with open(json_file, 'r', encoding="utf8") as slack_data:
                 slack_data = json.load(slack_data)
@@ -113,11 +123,10 @@ class SlackDataLoader:
 
             msg_type, msg_content, sender_id, time_msg, msg_dist, time_thread_st, reply_users, \
             reply_count, reply_users_count, tm_thread_end = [],[],[],[],[],[],[],[],[],[]
-
             for row in slack_data:
                 if 'bot_id' not in row.keys():
                     # removing the else satatement using not 
-
+                
                     msg_type.append(row['type'])
                     msg_content.append(row['text'])
                     if 'user_profile' in row.keys(): sender_id.append(row['user_profile']['real_name'])
@@ -148,13 +157,15 @@ class SlackDataLoader:
             df = pd.DataFrame(data=data, columns=columns)
             df = df[df['sender_name'] != 'Not provided']
             dflist.append(df)
-
         dfall = pd.concat(dflist, ignore_index=True)
         dfall['channel'] = path_channel.split('/')[-1].split('.')[0]        
         dfall = dfall.reset_index(drop=True)
-
+        
         return dfall
+
+
     def parse_slack_reaction(self, channel,path_channel):
+        
         """get reactions"""
         dfall_reaction = pd.DataFrame()
         combined = []
@@ -166,7 +177,7 @@ class SlackDataLoader:
 
         for k in combined:
             slack_data = json.load(open(k.name, 'r', encoding="utf-8"))
-
+            
             for i_count, i in enumerate(slack_data):
                 if 'reactions' in i.keys():
                     for j in range(len(i['reactions'])):
@@ -175,7 +186,7 @@ class SlackDataLoader:
                         reaction_name.append(i['reactions'][j]['name'])
                         reaction_count.append(i['reactions'][j]['count'])
                         reaction_users.append(",".join(i['reactions'][j]['users']))
-
+                    
         data_reaction = zip(reaction_name, reaction_count, reaction_users, msg, user_id)
         columns_reaction = ['reaction_name', 'reaction_count', 'reaction_users_count', 'message', 'user_id']
         df_reaction = pd.DataFrame(data=data_reaction, columns=columns_reaction)
@@ -197,7 +208,7 @@ class SlackDataLoader:
                 if 'replies' in msg.keys():
                     for i in msg['replies']:
                         comm_dict[i['user']] = comm_dict.get(i['user'], 0)+1
-
+        
         return comm_dict
 
 if __name__ == "__main__":
@@ -205,4 +216,5 @@ if __name__ == "__main__":
 
     
     parser.add_argument('--zip', help="Name of a zip file to import")
+    
     args = parser.parse_args()

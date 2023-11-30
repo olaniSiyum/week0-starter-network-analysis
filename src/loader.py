@@ -90,8 +90,6 @@ class SlackDataLoader:
             userNamesById[user['id']] = user['name']
             userIdsByName[user['name']] = user['id']
         return userNamesById, userIdsByName
-
-
     def slack_parser(self, path_channel):
         #for reading and extracting useful information for json files containing slack data 
         """ parse slack data to extract useful informations from the json file
@@ -103,13 +101,12 @@ class SlackDataLoader:
             5. convert to dataframe and merge all
             6. reset the index and return dataframe
         """
-
         # specify path to get json files
         combined = []
-        for json_file in glob.glob(f"{path_channel}*.json"):
+        for json_file in glob.glob(f"{path_channel}/*.json"):
             with open(json_file, 'r', encoding="utf8") as slack_data:
+                slack_data = json.load(slack_data)
                 combined.append(slack_data)
-
         # loop through all json files and extract required informations
         dflist = []
         for slack_data in combined:
@@ -157,14 +154,11 @@ class SlackDataLoader:
         dfall = dfall.reset_index(drop=True)
 
         return dfall
-
-
-    def parse_slack_reaction(self, channel):
-
+    def parse_slack_reaction(self, channel,path_channel):
         """get reactions"""
         dfall_reaction = pd.DataFrame()
         combined = []
-        for json_file in glob.glob(f"{self.path}*.json"):
+        for json_file in glob.glob(f"{path_channel}*.json"):
             with open(json_file, 'r') as slack_data:
                 combined.append(slack_data)
 

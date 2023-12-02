@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from pymongo.results import InsertManyResult
 from bson.objectid import ObjectId
 
 class MongoDBHandler:
@@ -17,8 +18,11 @@ class MongoDBHandler:
 
     def create_document(self, collection_name, data):
         collection = self.db[collection_name]
-        result = collection.insert_one(data)
-        return result.inserted_id
+        result = collection.insert_many(data)
+        if isinstance(result, InsertManyResult):
+            return result.inserted_ids
+        else:
+            return None
 
     def read_documents(self, collection_name, query=None):
         collection = self.db[collection_name]

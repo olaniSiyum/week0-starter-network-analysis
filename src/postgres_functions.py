@@ -26,6 +26,21 @@ def connect_to_postgres(dbname, user, password, host, port):
     cursor = connection.cursor()
     return connection, cursor
 
+def create_database(dbname, user, password, host, port):
+    """
+    Creates a PostgreSQL database.
+    Parameters:
+    - dbname: Name of the new database
+    - user: PostgreSQL superuser username
+    - password: PostgreSQL superuser password
+    - host: PostgreSQL server host
+    - port: PostgreSQL server port
+    """
+    connection, cursor = connect_to_postgres("postgres", user, password, host, port)
+    cursor.execute(f"CREATE DATABASE {dbname}")
+    connection.commit()
+    connection.close()
+    
 def create_tables_from_sql_file(connection, cursor, sql_file_path):
     """
     Creates tables in the PostgreSQL database from a .sql file.
